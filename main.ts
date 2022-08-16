@@ -9,6 +9,7 @@ interface WaypointSettings {
 	waypointFlag: string
 	stopScanAtFolderNotes: boolean,
 	showFolderNotes: boolean,
+	ignoreFolders: string
 	debugLogging: boolean,
 	useWikiLinks: boolean,
 	showEnclosingNote: boolean,
@@ -19,6 +20,7 @@ const DEFAULT_SETTINGS: WaypointSettings = {
 	waypointFlag: "%% Waypoint %%",
 	stopScanAtFolderNotes: false,
 	showFolderNotes: false,
+	ignoreFolders: "_attachments",
 	debugLogging: false,
 	useWikiLinks: true,
 	showEnclosingNote: false,
@@ -83,7 +85,7 @@ export default class Waypoint extends Plugin {
 					this.log("Found waypoint flag in folder note!");
 					await this.updateWaypoint(file);
 					await this.updateParentWaypoint(file.parent, this.settings.folderNoteType === FolderNoteType.OutsideFolder);
-					return;	
+					return;
 				} else if (file.parent.isRoot()) {
 					this.log("Found waypoint flag in root folder.");
 					this.printWaypointError(file, `%% Error: Cannot create a waypoint in the root folder of your vault. For more information, check the instructions [here](https://github.com/IdreesInc/Waypoint) %%`);
@@ -196,7 +198,7 @@ export default class Waypoint extends Plugin {
 			return null;
 		} else if (node instanceof TFolder) {
 			let text = "";
-			if (!topLevel || this.settings.showEnclosingNote) {
+			if ((!topLevel || this.settings.showEnclosingNote) && node.name != this.settings.ignoreFolders) {
 				// Print the folder name
 				text = `${bullet} **${node.name}**`;
 				let folderNote;
@@ -353,7 +355,7 @@ export default class Waypoint extends Plugin {
 
 	log(message: string) {
 		if (this.settings.debugLogging) {
-			console.log(message);			
+			console.log(message);
 		}
 	}
 
